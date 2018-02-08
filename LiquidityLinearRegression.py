@@ -8,11 +8,12 @@ from sklearn import linear_model
 from bokeh.models import HoverTool, BoxSelectTool
 import matplotlib.pyplot as plt
 import datetime as dt
-
+from pandas_datareader import data
 #change the number to move the left bound left and right if needed
 numOfDaysToGet = 70
 numOfCandleSticksToPredict = 1
 currencyToGet = 'USDT_BTC'
+windowLength = 14
 
 #api call with poloniex
 api = Poloniex(timeout=None, jsonNums=float)
@@ -37,18 +38,29 @@ df['date']= df['date'].map(dt.datetime.toordinal)
 #calculate hui hubel liquidty rates
 df['liquidity'] = ((df['high'] - df['low']) / df['low']) / (df['volume'] / (df['weightedAverage'] * df['quoteVolume']))
 
-#Relative Strength Index
-df['RSI'] = 100 - (100/(1 + (df['open'] / df['close'])))
+
+#Calculates a relative strength index with an exponetial moving average as EMA better shows price movements - Tortise vs Heir example
+close = df['close']
+delta = close.diff()
+delta = delta[1:]
+up, down = delta.copy(), delta.copy()
+up[up < 0] = 0
+down[down > 0] = 0
+roll_up1 = pd.stats.moments.ewma(up, windowLength)
+roll_down1 = pd.stats.moments.ewma(down.abs(), windowLength)
+RS1 = roll_up1 / roll_down1
+df['rsi'] = 100.0 - (100.0 / (1.0 + RS1))
+
 
 #drop outliers
 df.dropna(inplace=True)
 
 #reassign column layouts
-df = df[['date', 'open', 'close', 'high', 'low', 'volume', 'quoteVolume', 'RSI','liquidity' ,'weightedAverage']]
+df = df[['date', 'open', 'close', 'high', 'low', 'volume', 'rsi', 'quoteVolume','liquidity' ,'weightedAverage']]
 
 
 
-dependentYVariable = 'RSI'
+dependentYVariable = 'volume'
 
 
 dates = []
