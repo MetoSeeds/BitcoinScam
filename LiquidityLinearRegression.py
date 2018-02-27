@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import datetime as dt
 from pandas_datareader import data
 #change the number to move the left bound left and right if needed
-numOfDaysToGet = 70
+numOfDaysToGet = 17000
 numOfCandleSticksToPredict = 1
 currencyToGet = 'USDT_BTC'
 windowLength = 14
@@ -60,7 +60,7 @@ df = df[['date', 'open', 'close', 'high', 'low', 'volume', 'rsi', 'quoteVolume',
 
 
 
-dependentYVariable = 'volume'
+dependentYVariable = 'rsi'
 
 
 dates = []
@@ -94,4 +94,6 @@ print("Average " , dependentYVariable ,": ", df[[dependentYVariable]].mean())
 print ("The predicted ", dependentYVariable ," for 4 candle sticks: " , str(predicted_price))
 print("R^2: ", rSquared)
 
+
+print(df.head())
 show_plot(dates,prices)

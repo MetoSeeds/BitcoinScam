@@ -12,7 +12,7 @@ from pandas_datareader import data
 
 
 #change the number to move the left bound left and right if needed
-numOfDaysToGet = 400
+numOfDaysToGet = 30
 
 currencyToGet = 'USDT_BTC'
 windowLength = 14
@@ -24,7 +24,7 @@ api = Poloniex(timeout=None, jsonNums=float)
 NumOfDaysToMoveBackFromToday = time() - api.DAY*0
 
 #period of candlesticks to recieve: 24, 4, 2, 0.5, 0.25, or  0.083
-period = api.HOUR * 4
+period = api.HOUR * 2
 
 #api call
 raw = api.returnChartData(currencyToGet, period=period, start=time() - api.DAY*numOfDaysToGet, end= NumOfDaysToMoveBackFromToday)
@@ -36,7 +36,7 @@ df = pd.DataFrame(raw)
 df['date'] = pd.to_datetime(df["date"], unit='s')
 
 #calculate hui hubel liquidty rates
-df['liquidity'] = ((df['high'] - df['low']) / df['low']) / (df['volume'] / (df['weightedAverage'] * df['quoteVolume']))
+df['liquidity'] = 500 * ((df['high'] - df['low']) / df['low']) / (df['volume'] / (df['weightedAverage'] * df['quoteVolume']))
 
 
 #Calculates a relative strength index with an exponetial moving average as EMA better shows price movements - Tortise vs Heir example
@@ -58,7 +58,7 @@ df = df[['date', 'open', 'close', 'high', 'low', 'volume', 'rsi', 'quoteVolume',
 df.dropna(inplace=True)
 
 #select which column you would like to be the respective y value
-columnToPrint = df['liquidity']
+columnToPrint = df['rsi']
 
 
 #print out last 15 results and correlations 
@@ -67,6 +67,7 @@ columnToPrint = df['liquidity']
 print()
 print("Average ", columnToPrint.name, ":", columnToPrint.mean())
 print(columnToPrint.name)
+print(df.tail())
 
 #tools listed on the graph
 tools = "pan,wheel_zoom,box_zoom,reset,save, hover"
@@ -83,6 +84,10 @@ p.grid.grid_line_alpha = 0.3
 #create green or red candle sticks 
 #p.circle(df['date'], columnToPrint, size=8, color="navy", alpha=0.5)
 p.line(df['date'], columnToPrint, line_width=2)
+
+columnToPrint = df['liquidity']
+p.line(df['date'], columnToPrint, line_width=2, color="green")
+
 
 #opens in browser
 show(p)
